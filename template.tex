@@ -1,0 +1,153 @@
+%
+% MIT Educational Studies Program
+% Student Medical Information Sheet
+%
+
+\documentclass{article}
+
+% Set up Header, Footer & Margins
+\usepackage[includeheadfoot,margin=1.5cm]{geometry}	% margin
+
+\usepackage{fancyhdr}	% headers
+\pagestyle{fancy}		% activate fancyhdr
+\fancyhf{}				% clear headers and footers
+
+\usepackage{fancyvrb}	% for safe insertion of user input
+\usepackage{textcomp}   % for \textquotesingle
+\usepackage{tabularx}   % for auto-fitting tables
+
+% Header Left: Name & Address - all pages
+\fancyhead[L]
+{
+	\textbf{Massachusetts Institute of Technology} \\
+	\textbf{Educational Studies Program} \\
+	84 Massachusetts Avenue, Room W20-467 \\
+	Cambridge, MA 02139
+	\vspace{1mm}
+}
+
+% Header Right: Phone, Fax & Email - all pages
+\fancyhead[R]
+{
+	phone: (617) 253-4882 \\
+	fax: (708) 253-4881 \\
+	email: esp@mit.edu \\
+	campus police: (617) 253-1212
+	\vspace{1mm}
+}
+
+% Header Underline
+\renewcommand{\headrulewidth}{0.1pt}
+
+% Footer ("see back") - first page only
+\fancypagestyle{firstfooter}
+{
+	\fancyfoot[R]{\sc Over $\hookrightarrow$}
+}
+
+
+% Line Spacing
+\usepackage{setspace}
+\setstretch{1.15}
+
+% Disable Paragraph Indentation
+\parindent = 0pt
+
+
+% The Document
+\begin{document}
+\thispagestyle{firstfooter}	% activate first-page footer
+\rule[-3ex]{0pt}{3ex}		% fix margin below header
+
+% Title
+\begin{center}
+{\large \textbf{Spring HSSP 2013 \\
+Student Medical Information Sheet}} \\
+{\sc Confidential} \\[5mm]
+
+% Infoxbox (name, username, version)
+\begin{tabular}{l r}
+\textbf{Name } & [[full_legal_name]] \\[-0.5mm]
+\textbf{ESP Username } & [[esp_username]] \\[2mm]
+\textbf{Version [[version]] } &  \\[-0.5mm]
+\textbf{Submitted } & [[formatted_date]] \\
+\end{tabular}
+\end{center}
+
+\vspace{1cm}
+
+% Column I
+\begin{minipage}[t]{0.5\textwidth}
+% Section 1
+\begin{section}{Basic Information}
+\begin{tabularx}{0.85\columnwidth}{l >{\raggedleft\arraybackslash}X}
+\textbf{Full Legal Name } & [[full_legal_name]] \\
+\textbf{Birthdate } & [[birthdate]] \\
+\\
+\textbf{ESP Username } & [[esp_username]] \\
+\textbf{ESP ID Number } &  [[esp_id_number]] \\
+\\
+\textbf{Cell Phone } & [[cell_phone_number]] \\
+\\
+\end{tabularx}
+\begin{tabularx}{0.85\columnwidth}{X}
+\textbf{Home Address} \\
+[[home_address]] \\ \\
+\end{tabularx}
+\end{section}
+
+% Section 2
+\begin{section}{Family Physician}
+\begin{tabularx}{0.85\columnwidth}{l >{\raggedleft\arraybackslash}X}
+\textbf{Physician Name } & [[physician_name]] \\
+\textbf{Physician Phone } & [[physician_phone]] \\ \\
+\end{tabularx}
+\end{section}
+
+% Section 3
+\begin{section}{Health Insurance}
+\begin{tabularx}{0.85\columnwidth}{l >{\raggedleft\arraybackslash}X}
+\textbf{Insurer } & [[name_of_health_insurance_company]] \\
+\textbf{Primary Subscriber } & [[primary_subscriber]] \\
+\textbf{Policy Number } & [[policy_number]] \\ \\
+\end{tabularx}
+\end{section}
+
+\end{minipage}
+% Column II
+\begin{minipage}[t]{0.5\textwidth}
+% Section 4
+\begin{section}{Emergency Contacts}
+\begin{tabularx}{0.85\columnwidth}{X}
+\textbf{Parent/Guardian No. 1} \\
+[[parentguardian_no_1]] \\
+\\
+\textbf{Parent/Guardian No. 2} \\
+[[parentguardian_no_2]] \\
+\\
+\textbf{Emergency Contact} \\
+[[emergency_contact]] \\ \\
+\end{tabularx}
+\end{section}
+\end{minipage}
+
+% Section 5
+\newpage
+\begin{section}{Medical History}
+\textbf{Date of last tetanus booster} \\
+[[date_of_last_tetanus_booster]] \\
+
+\textbf{Chronic medical conditions requiring onging care} \\
+[[chronic_medical_conditions_requiring_ongoing_care]] \\
+
+\textbf{Allergies (animals, latex, foods, meds, other)} \\
+[[allergies_animals_latex_food_meds_other]] \\
+
+\textbf{Prescription medicines used regularly or needed on occasion} \\
+[[prescription_medicines_used_regularly_or_needed_on_occasion]] \\
+
+\textbf{Any other health issues that MIT and/or ESP should be aware of?} \\
+[[any_other_health_issues_that_mit_andor_esp_should_be_aware_of]] \\
+
+\end{section}
+\end{document}
