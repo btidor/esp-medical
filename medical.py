@@ -314,7 +314,7 @@ def list_submissions(config):
         for submission in submission_list["submissions"]:
             submission_ids.append(submission["id"])
     
-    print "Total Medical Forms: " + config.form["submissions"]
+    print "Total Medical Forms: " + str(len(submission_ids))
     return submission_ids
 
 def process_submission(config, id):
