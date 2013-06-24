@@ -87,7 +87,7 @@ def check():
     try:
         config = initialize()
         choose_existing_folder(config)
-        config.program = "Splash 2012"
+        
         username = raw_input("ESP Website Username: ")
         password = getpass.getpass("ESP Website Password: ")
         
