@@ -113,12 +113,18 @@ def check():
         print "Students with a Missing Medical Form (%s):" \
               % len(missing)
         for name in missing:
-            print name
+            print "  " + name
         
         print ""
         print "Students with a Bypass (%s):" % len(bypass)
-        for name in sorted(bypass.values()):
-            print name
+        for id, name in bypass.iteritems():
+            completed = "  "
+            if str(id) in config.userlines:
+                completed = "* "
+            print completed + name
+        print ""
+        print "An asterisk (*) marks those who submitted a medical"
+        print "form despite receiving a bypass."
         
         print ""
         print "Check Complete!"
