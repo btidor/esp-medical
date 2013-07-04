@@ -90,22 +90,13 @@ def check():
         
         username = raw_input("ESP Website Username: ")
         password = getpass.getpass("ESP Website Password: ")
+        print ""
         
-        chunks = config.program.split(" ")
-        if len(chunks) == 2:
-            endpoint = chunks[0] + "/" + chunks[1]
-        elif len(chunks) == 3:
-            endpoint = chunks[1] + "/" + chunks[2] + "_" + chunks[0]
-        else:
-            print "Could not auto-detect endpoint. Please enter a URL fragment in"
-            print "the form: HSSP/Spring_2013"
-            print ""
-            endpoint = raw_input("Endpoint: ")
-        
-        endpoint = "learn/" + endpoint + "/medicalsyncapi"
-        result = api_query(endpoint,
-                           {"username": username, "password": password},
-                           ESP_WEBSITE)
+        endpoint = ESP_WEBSITE + "medicalsyncapi"
+        result = make_request(endpoint, {"username": username,
+                                         "password": password,
+                                         "program": config.program})
+        result = json.loads(result)
         
         if not "submitted" in result or not "bypass" in result:
             raise Exception("Invalid response from ESP website")
@@ -413,7 +404,12 @@ def finalize(config):
     print "Done! Enjoy!"
 
 
-def api_query(endpoint, parameters, api_base=API_BASE):
+def api_query(endpoint, parameters):
+    url = API_BASE + endpoint + "?" + urllib.urlencode(parameters)
+    result = make_request(url)
+    return json.loads(result)
+
+def make_request(url, post=dict()):
     # pycurl code thanks to [bit.ly/StT2y8]
     class Response(object):
         """ utility class to collect the response """
@@ -423,8 +419,6 @@ def api_query(endpoint, parameters, api_base=API_BASE):
             self.chunks.append(chunk)
         def content(self):
             return "".join(self.chunks)
-
-    url = api_base + endpoint + "?" + urllib.urlencode(parameters)
     
     res = Response()
     curl = pycurl.Curl()
@@ -432,12 +426,15 @@ def api_query(endpoint, parameters, api_base=API_BASE):
     curl.setopt(curl.WRITEFUNCTION, res.callback)
     curl.setopt(curl.CAINFO, "cacert.pem")
 
+    if len(post) != 0:
+        curl.setopt(curl.POSTFIELDS, urllib.urlencode(post))
+
     try:
         curl.perform()
     except pycurl.error:
         time.sleep(5)
         print "Connection failed; retrying"
-        return api_query(endpoint, parameters)
+        return make_request(url, post)
     
     http_code = curl.getinfo(curl.HTTP_CODE)
     result = res.content()
@@ -447,7 +444,7 @@ def api_query(endpoint, parameters, api_base=API_BASE):
     if result == "Sorry, but an error has occurred":
         raise Exception("API ERROR: Sorry, but an error has occurred" +
                         " (invalid endpoint?)")
-    return json.loads(result)
+    return result
 
 def search_details(details, field_id):
     for item in details["data"]:
