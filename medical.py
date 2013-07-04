@@ -153,6 +153,8 @@ def initialize():
         shortnames = None
         userlines = dict()
         submissions = list()
+        SAVE_FIELDS = ["form", "program", "shortnames", "userlines",
+                       "submissions"]
     config = Config()
     
     # Load LaTeX template as config.template
@@ -339,7 +341,7 @@ def process_submission(config, id):
         # TODO: this is sub-optimal because it removes weird characters
 
     filename = sanitize_filename(userline + " (v" + str(version) + ")")
-    config.userlines[esp_id][version] = filename
+    config.userlines[esp_id][str(version)] = filename
 
     values_escaped["version"] = str(version)
     values_escaped["formatted_date"] = \
@@ -371,8 +373,8 @@ def write_index(config):
     
     for esp_id in sorted(config.userlines.iterkeys()):
         version = 1
-        while version in config.userlines[esp_id]:
-            index.write(config.userlines[esp_id][version] + "\n")
+        while str(version) in config.userlines[esp_id]:
+            index.write(config.userlines[esp_id][str(version)] + "\n")
             version += 1
     index.close()
 
@@ -381,7 +383,7 @@ def save_state(config):
     json_path = os.path.join(config.folder, "config.json")
     f = open(json_path, "w")
     d = dict()
-    for key in ["form", "program", "shortnames", "userlines", "submissions"]:
+    for key in config.SAVE_FIELDS:
         d[key] = getattr(config, key)
     json.dump(d, f)
 
