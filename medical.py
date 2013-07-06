@@ -352,6 +352,7 @@ def process_submission(config, id):
     values_escaped["version"] = str(version)
     values_escaped["formatted_date"] = \
         time.strftime("%B %d, %Y", time.strptime(details["timestamp"], "%Y-%m-%d %H:%M:%S"))
+    values_escaped["program_name"] = texutil.latex_escape(config.program)
 
     interpolated_template = config.template
     for ve in values_escaped:
