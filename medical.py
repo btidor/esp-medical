@@ -131,6 +131,40 @@ def check():
     except:
         exception_handler(config, False)
 
+def blank():
+    config = initialize()
+    program = raw_input("Program Name and Year: ")
+    folder = raw_input("Folder to Place Blank.pdf: ")
+    print ""
+
+    interpolated_template = config.template
+    replacements = dict()
+    for field in REQUIRED_FIELDS:
+        if field in ["full_legal_name", "esp_username"]:
+            replacements[field] = ""
+        else:
+            replacements[field] = "\\\\"
+    replacements["version"] = "X"
+    replacements["formatted_date"] = "---"
+    replacements["program_name"] = texutil.latex_escape(program)
+    
+    for k, v in replacements.iteritems():
+        interpolated_template = \
+                              interpolated_template.replace(
+                                  "[[" + k + "]]", v)
+    
+    report_tex = open(os.path.join(folder, "Blank.tex"), "w")
+    report_tex.write(interpolated_template.encode("utf8", "ignore"))
+        # TODO: this is sub-optimal because it removes weird characters
+    report_tex.close()
+    
+    subprocess.call(["pdflatex", os.path.join(folder, "Blank.tex"),
+                     "-output-directory=" + folder])
+
+    for ext in [".tex", ".aux", ".log"]:
+        os.remove(os.path.join(folder, "Blank" + ext))
+    print "Done!"
+
 def initialize():
     # Print header and check environment
     print ""
@@ -505,7 +539,8 @@ def usage():
   Options:
     complete: download complete medical archive
     update:   update a medical archive
-    check:    cross-check against website registrations"""
+    check:    cross-check against website registrations
+    blank:    generate a blank template form"""
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -516,5 +551,7 @@ if __name__ == "__main__":
         incremental_download()
     elif sys.argv[1] == "check":
         check()
+    elif sys.argv[1] == "blank":
+        blank()
     else:
         usage()
