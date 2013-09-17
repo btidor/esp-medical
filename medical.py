@@ -30,7 +30,7 @@ ACCESS_TOKEN_PATH = ("formstack-accounts", "esp-chair", "esp-api-access.txt")
 ENCRYPTION_KEY_PATH = ("formstack-encryption", "%s-medical", "%s.txt")
 
 # NOTE: if you change the form, make sure to change the LaTeX template as well!
-REQUIRED_FIELDS = ["esp_username", "esp_id_number", "full_legal_name",
+REQUIRED_FIELDS = ["esp_username", "full_legal_name",
                    "birthdate", "cell_phone_number", "home_address",
                    "parentguardian_no_1", "parentguardian_no_2",
                    "emergency_contact",
@@ -291,16 +291,7 @@ def discover_enckey(config):
     afs_path = os.path.join(AFS_PREFIX, *(AFS_BASE + ENCRYPTION_KEY_PATH))
     chunks = config.program.lower().split(" ")
         # e.g. ["spark", "2014"] or ["summer", "hssp", "2013"]
-    if len(chunks) == 2:
-        prog = chunks[0]
-        year = chunks[1]
-        afs_path = afs_path % (prog, year)
-    elif len(chunks) == 3:
-        prog = chunks[1]
-        semester = chunks[0] + "-" + chunks[2]
-        afs_path = afs_path % (prog, semester)
-    else:
-        afs_path = None
+    afs_path = afs_path % ('delve', '2013-2014')
     
     try:
         if afs_path is None:
@@ -367,21 +358,20 @@ def process_submission(config, id):
         values[v] = search_details_list(details, config.shortnames[v])
         values_escaped[v] = texutil.latex_escape(values[v])
     
-    esp_id = int(values["esp_id_number"])
-    if esp_id not in config.userlines:
-        config.userlines[esp_id] = dict()
+    username = values["esp_username"]
+    if username not in config.userlines:
+        config.userlines[username] = dict()
         version = 1
     else:
-        version = config.userlines[esp_id]["next"]
-    config.userlines[esp_id]["next"] = version + 1
+        version = config.userlines[username]["next"]
+    config.userlines[username]["next"] = version + 1
     
-    userline = values["esp_id_number"] + " - " + \
-               values["full_legal_name"] + " - " + values["esp_username"]
+    userline = values["full_legal_name"] + " - " + values["esp_username"]
     userline = userline.encode("ascii", "ignore")
         # TODO: this is sub-optimal because it removes weird characters
 
     filename = sanitize_filename(userline + " (v" + str(version) + ")")
-    config.userlines[esp_id][str(version)] = filename
+    config.userlines[username][str(version)] = filename
 
     values_escaped["version"] = str(version)
     values_escaped["formatted_date"] = \
@@ -412,10 +402,10 @@ def write_index(config):
     index.write("Last Updated: " + time.asctime(time.localtime(time.time())) + "\n")
     index.write("\n")
     
-    for esp_id in sorted(config.userlines.iterkeys()):
+    for username in sorted(config.userlines.iterkeys()):
         version = 1
-        while str(version) in config.userlines[esp_id]:
-            index.write(config.userlines[esp_id][str(version)] + "\n")
+        while str(version) in config.userlines[username]:
+            index.write(config.userlines[username][str(version)] + "\n")
             version += 1
     index.close()
 
@@ -436,7 +426,7 @@ def finalize(config):
 
     # Test for successful PDF creation
     contents = os.listdir(config.folder)
-    for esp_id, versions in config.userlines.iteritems():
+    for username, versions in config.userlines.iteritems():
         version = 1
         while version in versions:
             filename = versions[version] + ".pdf"
