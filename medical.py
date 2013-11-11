@@ -280,7 +280,7 @@ def choose_form(config):
     print ""
 
     # Parse program name from form title
-    config.program = string.join(config.form["name"].split(" ")[:-1])
+    config.program = string.join(config.form["name"].split(" ")[:-2])
     print "Detected program name: " + config.program
     print ""
 
