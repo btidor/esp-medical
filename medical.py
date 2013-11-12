@@ -69,6 +69,7 @@ def incremental_download():
         choose_existing_folder(config)
         discover_token(config)
         discover_enckey(config)
+        update_form(config)
 
         all_submissions = list_submissions(config)
         total = len(all_submissions)
@@ -283,6 +284,17 @@ def choose_form(config):
     config.program = string.join(config.form["name"].split(" ")[:-2])
     print "Detected program name: " + config.program
     print ""
+
+def update_form(config):
+    # Reload the form object stored in config.form.
+    forms_list = api_query("form",
+                           {"folders": "0", "oauth_token": config.oauth_token})
+    candidates = [x for x in forms_list["forms"]
+                  if x["id"] == config.form["id"]]
+    if len(candidates) != 1:
+        print "Could not find form."
+        raise Exception("Could not find form")
+    config.form = candidates[0]
 
 def discover_enckey(config):
     # Collect the form's encryption key, first by looking in AFS (the path is
