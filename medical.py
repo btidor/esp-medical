@@ -51,7 +51,7 @@ def full_download():
         choose_form(config)
         discover_enckey(config)
         load_fields(config)
-        
+
         all_submissions = list_submissions(config)
         total = len(all_submissions)
         for id in all_submissions:
@@ -88,34 +88,34 @@ def check():
     try:
         config = initialize()
         choose_existing_folder(config)
-        
+
         username = raw_input("ESP Website Username: ")
         password = getpass.getpass("ESP Website Password: ")
         print ""
-        
+
         endpoint = ESP_WEBSITE + "medicalsyncapi"
         result = make_request(endpoint, {"username": username,
                                          "password": password,
                                          "program": config.program})
         result = json.loads(result)
-        
+
         if not "submitted" in result or not "bypass" in result:
             raise Exception("Invalid response from ESP website")
-        
+
         submitted = result['submitted']
         bypass = result['bypass']
-        
+
         missing = list()
         for id, name in submitted.iteritems():
             if str(id) not in config.userlines:
                 missing.append(name)
-        
+
         missing.sort()
         print "Students with a Missing Medical Form (%s):" \
               % len(missing)
         for name in missing:
             print "  " + name
-        
+
         print ""
         print "Students with a Bypass (%s):" % len(bypass)
         for id, name in bypass.iteritems():
@@ -126,7 +126,7 @@ def check():
         print ""
         print "An asterisk (*) marks those who submitted a medical"
         print "form despite receiving a bypass."
-        
+
         print ""
         print "Check Complete!"
     except:
@@ -148,17 +148,17 @@ def blank():
     replacements["version"] = "X"
     replacements["formatted_date"] = "---"
     replacements["program_name"] = texutil.latex_escape(program)
-    
+
     for k, v in replacements.iteritems():
         interpolated_template = \
                               interpolated_template.replace(
                                   "[[" + k + "]]", v)
-    
+
     report_tex = open(os.path.join(folder, "Blank.tex"), "w")
     report_tex.write(interpolated_template.encode("utf8", "ignore"))
         # TODO: this is sub-optimal because it removes weird characters
     report_tex.close()
-    
+
     subprocess.call(["pdflatex", os.path.join(folder, "Blank.tex"),
                      "-output-directory=" + folder], cwd=folder)
 
@@ -172,18 +172,18 @@ def initialize():
     print "Formstack Medical Form Downloader"
     print "---------------------------------"
     print ""
-    
+
     # Check for certificate bundle
     if not os.path.exists("cacert.pem"):
         print "Missing cacert.pem in current directory."
         print "Please download from http://curl.haxx.se/ca/cacert.pem"
         raise Exception("Missing cacert.pem")
-    
+
     # Check for LaTeX template
     if not os.path.exists("template.tex"):
         print "Missing template.tex in current directory."
         raise Exception("Missing template.tex")
-    
+
     # Create config
     class Config:
         oauth_token = None
@@ -197,12 +197,12 @@ def initialize():
         SAVE_FIELDS = ["form", "program", "shortnames", "userlines",
                        "submissions"]
     config = Config()
-    
+
     # Load LaTeX template as config.template
     latex_file = open("template.tex", "r")
     config.template = latex_file.read()
     latex_file.close()
-    
+
     return config
 
 def choose_new_folder(config):
@@ -235,11 +235,11 @@ def choose_existing_folder(config):
             setattr(config, k, v)
     except IOError:
         raise Exception("The specified directory could not be loaded.")
-    
+
     print ""
     print "Program Name: " + config.program
     print ""
-    
+
 def discover_token(config):
     # Collect Formstack connection information, reading it out of AFS if
     # possible, or else by prompting the user to look it up. The token is
@@ -273,7 +273,7 @@ def choose_form(config):
         for folder in forms_list["forms"]:
             forms.extend(forms_list["forms"][folder])
         print "(listing all forms}"
-    
+
     for i in range(len(forms)):
         print str(i) + " " + forms[i]["name"]
     form_no = raw_input("Form Number: ")
@@ -313,7 +313,7 @@ def discover_enckey(config):
         afs_path = afs_path % (prog, semester)
     else:
         afs_path = None
-    
+
     try:
         if afs_path is None:
             raise IOError()
@@ -333,7 +333,7 @@ def load_fields(config):
     field_list = api_query("form/" + config.form["id"] + "/field",
                            {"oauth_token": config.oauth_token,
                             "encryption_password": config.enckey})
-    
+
     for field in field_list:
         if field["name"] == "":
             continue
@@ -356,10 +356,10 @@ def list_submissions(config):
                                     {"page": str(n), "per_page": "100",
                                      "sort": "ASC", "oauth_token": config.oauth_token,
                                      "encryption_password": config.enckey})
-        
+
         for submission in submission_list["submissions"]:
             submission_ids.append(submission["id"])
-    
+
     print "Total Medical Forms: " + str(len(submission_ids))
     return submission_ids
 
@@ -372,13 +372,13 @@ def process_submission(config, id):
     details = api_query("submission/" + str(id),
                         {"oauth_token": config.oauth_token,
                          "encryption_password": config.enckey})
-    
+
     values = dict()
     values_escaped = dict()
     for v in config.shortnames:
         values[v] = search_details_list(details, config.shortnames[v])
         values_escaped[v] = texutil.latex_escape(values[v])
-    
+
     esp_id = int(values["esp_id_number"])
     if esp_id not in config.userlines:
         config.userlines[esp_id] = dict()
@@ -386,7 +386,7 @@ def process_submission(config, id):
     else:
         version = config.userlines[esp_id]["next"]
     config.userlines[esp_id]["next"] = version + 1
-    
+
     userline = values["esp_id_number"] + " - " + \
                values["full_legal_name"] + " - " + values["esp_username"]
     userline = userline.encode("ascii", "ignore")
@@ -405,16 +405,16 @@ def process_submission(config, id):
         interpolated_template = \
                               interpolated_template.replace(
                                   "[[" + ve + "]]", values_escaped[ve])
-    
+
     report_tex = open(os.path.join(config.folder, filename + ".tex"), "w")
     report_tex.write(interpolated_template.encode("utf8", "ignore"))
         # TODO: this is sub-optimal because it removes weird characters
     report_tex.close()
-    
+
     subprocess.call(["pdflatex", filename + ".tex",
                      "-output-directory=" + config.folder], cwd=config.folder)
     config.submissions.append(id)
-    
+
 def write_index(config):
     # Create index file listing file names
     index = open(os.path.join(config.folder, "000 - index.txt"), "w")
@@ -423,7 +423,7 @@ def write_index(config):
     index.write("esp@mit.edu  |  (617) 253-4882\n")
     index.write("Last Updated: " + time.asctime(time.localtime(time.time())) + "\n")
     index.write("\n")
-    
+
     for esp_id in sorted(config.userlines.iterkeys()):
         version = 1
         while str(version) in config.userlines[esp_id]:
@@ -474,7 +474,7 @@ def make_request(url, post=dict()):
             self.chunks.append(chunk)
         def content(self):
             return "".join(self.chunks)
-    
+
     res = Response()
     curl = pycurl.Curl()
     curl.setopt(curl.URL, str(url))
@@ -490,7 +490,7 @@ def make_request(url, post=dict()):
         time.sleep(5)
         print "Connection failed; retrying"
         return make_request(url, post)
-    
+
     http_code = curl.getinfo(curl.HTTP_CODE)
     result = res.content()
 
@@ -526,7 +526,7 @@ def search_details_list(details, field_ids):
                 return value
         except KeyError:
             pass
-    
+
     if value is not None:
         return value
     raise KeyError("Field not found in details: " + field_id)
