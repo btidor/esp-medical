@@ -160,7 +160,7 @@ def blank():
     report_tex.close()
     
     subprocess.call(["pdflatex", os.path.join(folder, "Blank.tex"),
-                     "-output-directory=" + folder])
+                     "-output-directory=" + folder], cwd=folder)
 
     for ext in [".tex", ".aux", ".log"]:
         os.remove(os.path.join(folder, "Blank" + ext))
@@ -412,7 +412,7 @@ def process_submission(config, id):
     report_tex.close()
     
     subprocess.call(["pdflatex", filename + ".tex",
-                     "-output-directory=" + config.folder])
+                     "-output-directory=" + config.folder], cwd=config.folder)
     config.submissions.append(id)
     
 def write_index(config):
